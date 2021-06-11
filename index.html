@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Paint</title>
+    <style>
+        BODY {
+            margin: 0;
+            padding: 0;
+            background: white;
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+
+        }
+        #canvas {
+            /* width: 100vw; */
+            /* height: 100vh; */
+            /* background: lime; */
+        }
+        .settings {
+            transform-origin: left top;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 130px;
+            width: 200px;
+            z-index: 9;
+            background: rgba(0, 0, 0, 0.3);
+            /* opacity: .15; */
+            transition: .5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            
+        }
+        /* .toggle {
+            position: fixed;
+            left: 200px;
+            top: 0;
+            transition: .5s;
+
+            height: 80px;
+            width: 30px;
+            background: silver;
+            border-radius: 0 15px 15px 0;
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toggle_arrow {
+            height: 20px;
+            transform: rotate(-180deg);
+            transition: .5s;
+            fill: whitesmoke;
+        } */
+        /* .settings:hover {
+            opacity: 1;
+            transition: .5s;
+        } */
+        .title {
+          
+            font: 30px Arial;
+            
+        }
+        .brush {
+            height: 30px;
+            width: 30px;
+            background: black;
+            border-radius: 15px;
+            /* opacity: 0; */
+            
+            /* transition: .1s; */
+
+        }
+        .brush_container {
+            position: fixed;
+            top: 130px;
+            left: 0px;
+            height: 200px;
+            width: 200px;
+            /* background: lime; */
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+        }
+        @media (orientation: portrait) {
+            .settings { transform: scale(2); }
+            .brush_container { top: 30px; left: 400px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" ontouchstart="document.querySelector('.brush_container').style.display = 'none';" onmousedown="document.querySelector('.brush_container').style.display = 'none';"></canvas>
+    <div class="settings" >
+        <div class="title">Paint</div>
+        <input class="width-picker" style="width: 190px;" type="range" min="5" max="200" value="20" oninput="InputWidth(value)" >
+        <div style="display: flex; justify-content: space-around; align-items: center;">
+            <button style="margin: 5px;width:50px;height:50px;" onclick="ClearBoard()">Clear</button>
+            <input class="color-picker" style="width:50px;height:50px;" type="color" value="#000000" oninput="InputColor(value)" >
+        
+        </div>
+        
+    </div>
+    <div class="brush_container">
+        <div class="brush"></div>
+
+    </div>
+    <!-- <div class="toggle" onclick="ToggleSettings()">
+        <svg class="toggle_arrow" viewBox="0 0 494.148 494.148">
+            <path d="M405.284,201.188L130.804,13.28C118.128,4.596,105.356,0,94.74,0C74.216,0,61.52,16.472,61.52,44.044v406.124
+			c0,27.54,12.68,43.98,33.156,43.98c10.632,0,23.2-4.6,35.904-13.308l274.608-187.904c17.66-12.104,27.44-28.392,27.44-45.884
+			C432.632,229.572,422.964,213.288,405.284,201.188z"/>
+        </svg>
+    </div> -->
+
+    <script>
+        // Setup
+        // var showSettings = true
+        // function ToggleSettings()
+        // {
+        //     if (showSettings)
+        //     {
+        //         document.querySelector('.settings').style.left = '-200px';
+        //         document.querySelector('.toggle').style.left = '0';
+        //         document.querySelector('.toggle_arrow').style.transform = 'rotate(0deg)';
+        //         showSettings = false;
+        //     }
+        //     else
+        //     {
+        //         document.querySelector('.settings').style.left = '0';
+        //         document.querySelector('.toggle').style.left = '200px';
+        //         document.querySelector('.toggle_arrow').style.transform = 'rotate(-180deg)';
+
+        //         showSettings = true;
+        //     }
+        // }
+
+        const CANVAS = document.querySelector('#canvas');
+        const ctx = CANVAS.getContext('2d');
+        CANVAS.width = window.innerWidth;
+        CANVAS.height = window.innerHeight;
+        var isMouseDown = false;
+        var brush = {
+            width: 20,
+            color: '#000000',
+        };
+        const BRUSH = document.querySelector('.brush');
+
+        ctx.lineWidth = brush.width;
+        ctx.fillStyle = ctx.strokeStyle = brush.color;
+
+        
+
+        CANVAS.addEventListener('touchstart', e => 
+        {
+            ctx.beginPath();
+            ctx.arc(e.changedTouches[0].clientX, e.changedTouches[0].clientY, brush.width/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        });
+        CANVAS.addEventListener('touchmove', e => 
+        {
+            ctx.lineTo(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(e.changedTouches[0].clientX, e.changedTouches[0].clientY, brush.width/2, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        });
+
+        
+        CANVAS.addEventListener('mousedown', (e) => 
+        {
+            isMouseDown = true;
+            ctx.beginPath();
+            ctx.arc(e.clientX, e.clientY, brush.width/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX, e.clientY);
+        });
+        document.addEventListener('mousemove', e => 
+        {
+            if (isMouseDown)
+            {
+                ctx.lineTo(e.clientX, e.clientY);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(e.clientX, e.clientY, brush.width/2, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(e.clientX, e.clientY);
+            }
+        });
+        document.addEventListener('mouseup', () => 
+        {
+            isMouseDown = false;
+        });
+
+        // Settings events
+        function InputColor(color)
+        {
+            ctx.fillStyle = ctx.strokeStyle = color;
+            BRUSH.style.backgroundColor = color;
+            // console.log(color);
+            document.querySelector('.brush_container').style.display = 'flex';
+        }
+        function InputWidth(width)
+        {
+            ctx.lineWidth = brush.width = width;
+            BRUSH.style.width = BRUSH.style.height = width + 'px';
+            BRUSH.style.borderRadius = width/2 + 'px';
+            document.querySelector('.brush_container').style.display = 'flex';
+            // setTimeout(() => {
+                
+            //     // BRUSH.style.transitionDelay = '5s';
+            //     // BRUSH.style.transition = '.5s';
+            // }, 1000);
+
+        }
+
+        function ClearBoard()
+        {
+            ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
+        }
+
+        
+    </script>
+</body>
+</html>
